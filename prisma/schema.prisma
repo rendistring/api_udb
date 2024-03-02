@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id String @id @default(cuid())
+  username  String
+  uid String
+  role String?
+  accessToken String @map("access_token")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  Order Order[]
+
+  @@map("users")
+}
+
+model Products {
+  id String @id @default(uuid())
+  name  String
+  amount  String
+  memo  String
+  img String
+  imgUrl  String
+  description String
+  categoryId  String  @map("category_id")
+  wishlist WishList[] @relation("ProductWishlist")
+  Category  Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  Order Order[]
+
+  @@map("products")
+}
+
+model Category {
+  id String @id @default(cuid())
+  name  String
+  img String
+  img_url String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  Products Products[]
+
+  @@map("category")
+}
+
+model WishList {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  products Products[] @relation("ProductWishlist")
+}
+
+model Order {
+  id String @id @default(cuid())
+  userId  String @map("user_id")
+  productId String @map("product_id")
+  qty Int @default(0) @db.UnsignedInt
+  pricePerItem  Decimal
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  Users Users @relation(fields: [userId], references: [id])
+  Products  Products @relation(fields: [productId], references: [id])
+}
+
+model Transaction {
+  id  String @id @default(cuid())
+  userId  String @map("user_id")
+  totalAmount String @map("total_amount")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("transaction")
+}
